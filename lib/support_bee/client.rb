@@ -11,8 +11,14 @@ module SupportBee
     end
 
     def create_ticket(params)
-      resp = RestClient.post(build_url('tickets'), { ticket: params }, { content_type: :json, accept: :json })
+      resp = RestClient.post(build_url('tickets'), { ticket: params }, build_headers)
       parse_json(resp).ticket
+    end
+
+    def add_label(ticket_id, label)
+      url = build_url("tickets/#{ ticket_id }/labels/#{ label }?auth_token=#{ auth_token }")
+      resp = RestClient.post(url, {}, build_headers)
+      parse_json(resp).label
     end
 
     private
@@ -23,6 +29,10 @@ module SupportBee
 
     def parse_json(json)
       Hashie::Mash.new(JSON.parse(json))
+    end
+
+    def build_headers(headers={})
+      { content_type: :json, accept: :json }.merge(headers)
     end
 
   end

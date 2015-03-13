@@ -2,12 +2,12 @@ require 'spec_helper'
 
 describe SupportBee::Client do
   before do
-    @client = SupportBee::Client.new(company: 'gobiasindustries', auth_token: '4J6DrGyYircgGZGgqzoV')
+    @client = SupportBee::Client.new(company: 'gobiasindustries', auth_token: 'abc123')
   end
 
   it "can create a ticket" do
-    stub_request(:post, "https://shopstick.supportbee.com/tickets")
-      .to_return(status: 200, body: <<-RESP
+    stub_request(:post, "https://gobiasindustries.supportbee.com/tickets")
+      .to_return(status: 201, body: <<-RESP
         {
           "ticket": {
             "id": 4784806,
@@ -25,7 +25,7 @@ describe SupportBee::Client do
             "summary": "My eggs are no longer in the fridge.",
             "draft": false,
             "source": {
-              "web": "shopstick-support@supportbeemail.com"
+              "web": "gobiasindustries-support@supportbeemail.com"
             },
             "cc": [],
             "labels": [],
@@ -69,5 +69,26 @@ describe SupportBee::Client do
     expect(ticket.requester.email).to eql("tobiasfunke@example.com")
     expect(ticket.content.text).to eql("My eggs are no longer in the fridge.")
     expect(ticket.content.html).to eql("My eggs are no longer in the fridge.")
+  end
+
+  it "can create a label" do
+    stub_request(:post, "https://gobiasindustries.supportbee.com/tickets/4784985/labels/important")
+      .with(query: { auth_token: "abc123" })
+      .to_return(status: 201, body: <<-RESP
+          {
+            "label": {
+              "id": 9839577,
+              "label": "important",
+              "ticket": 4784985
+            }
+          }
+      RESP
+      )
+
+    label = @client.add_label(4784985, "important")
+
+    expect(label.id).to eql(9839577)
+    expect(label.label).to eql("important")
+    expect(label.ticket).to eql(4784985)
   end
 end
