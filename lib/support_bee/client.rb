@@ -10,6 +10,21 @@ module SupportBee
       @base_url = "https://#{options[:company]}.supportbee.com/"
     end
 
+    def ticket(id)
+      url = build_url("tickets/#{ id }?auth_token=#{ auth_token }")
+
+      RestClient.get(url) do |response, request, result, &block|
+        case response.code
+        when 200
+          format_response(parse_json(response)).ticket
+        when 404
+          raise SupportBee::NotFound.new(response.body)
+        else
+          response.return!(request, result, &block)
+        end
+      end
+    end
+
     def create_ticket(params)
       RestClient.post(build_url('tickets'), { ticket: params }, build_headers) do |response, request, result, &block|
         case response.code
