@@ -94,7 +94,7 @@ describe SupportBee::Client do
           }
         }
 
-        expect { @client.create_ticket(ticket) }.to raise_error(RestClient::BadRequest)
+        expect { @client.create_ticket(ticket) }.to raise_error(SupportBee::BadRequest)
       end
     end
   end
@@ -124,12 +124,12 @@ describe SupportBee::Client do
     end
 
     context "when label doesn't exist" do
-      it "raises RestClient::ResourceNotFound" do
+      it "raises SupportBee::NotFound" do
         stub_request(:post, "https://gobiasindustries.supportbee.com/tickets/4784985/labels/non-existent-label")
           .with(query: { auth_token: "abc123" })
           .to_return(status: 404)
 
-        expect { @client.add_label(4784985, "non-existent-label") }.to raise_error(RestClient::ResourceNotFound)
+        expect { @client.add_label(4784985, "non-existent-label") }.to raise_error(SupportBee::NotFound)
       end
     end
   end

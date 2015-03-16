@@ -11,14 +11,31 @@ module SupportBee
     end
 
     def create_ticket(params)
-      resp = RestClient.post(build_url('tickets'), { ticket: params }, build_headers)
-      parse_json(resp).ticket
+      RestClient.post(build_url('tickets'), { ticket: params }, build_headers) do |response, request, result, &block|
+        case response.code
+        when 201
+          format_response(parse_json(response)).ticket
+        when 400
+          raise SupportBee::BadRequest.new(response.body)
+        else
+          response.return!(request, result, &block)
+        end
+      end
     end
 
     def add_label(ticket_id, label)
       url = build_url("tickets/#{ ticket_id }/labels/#{ label }?auth_token=#{ auth_token }")
-      resp = RestClient.post(url, {}, build_headers)
-      parse_json(resp).label
+
+      RestClient.post(url, {}, build_headers) do |response, request, result, &block|
+        case response.code
+        when 201
+          format_response(parse_json(response)).label
+        when 404
+          raise SupportBee::NotFound.new(response.body)
+        else
+          response.return!(request, result, &block)
+        end
+      end
     end
 
     private
@@ -27,8 +44,12 @@ module SupportBee
       @base_url + endpoint
     end
 
+    def format_response(parsed_json)
+      Hashie::Mash.new(parsed_json)
+    end
+
     def parse_json(json)
-      Hashie::Mash.new(JSON.parse(json))
+      JSON.parse(json)
     end
 
     def build_headers(headers={})
