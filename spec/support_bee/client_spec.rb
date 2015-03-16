@@ -76,7 +76,7 @@ describe SupportBee::Client do
 
 
     context "when validation fails" do
-      it "raises RestClient::BadRequest" do
+      it "raises SupportBee::BadRequest" do
         stub_request(:post, "https://gobiasindustries.supportbee.com/tickets")
           .to_return(status: 400, body: <<-RESP
             {
