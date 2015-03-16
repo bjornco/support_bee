@@ -9,52 +9,7 @@ describe SupportBee::Client do
     context "when successful" do
       it "returns a formatted ticket" do
         stub_request(:post, "https://gobiasindustries.supportbee.com/tickets")
-          .to_return(status: 201, body: <<-RESP
-            {
-              "ticket": {
-                "id": 4784806,
-                "subject": "Where are my hard-boiled eggs?",
-                "replies_count": 0,
-                "agent_replies_count": 0,
-                "comments_count": 0,
-                "last_activity_at": "2015-03-13T20:40:50Z",
-                "created_at": "2015-03-13T20:40:50Z",
-                "unanswered": true,
-                "archived": false,
-                "private": false,
-                "spam": false,
-                "trash": false,
-                "summary": "My eggs are no longer in the fridge.",
-                "draft": false,
-                "source": {
-                  "web": "gobiasindustries-support@supportbeemail.com"
-                },
-                "cc": [],
-                "labels": [],
-                "requester": {
-                  "id": 1493594,
-                  "email": "tobiasfunke@example.com",
-                  "name": "Tobias Funke",
-                  "agent": false,
-                  "picture": {
-                    "thumb20": "https://secure.gravatar.com/avatar/cf3bd47834635a5f769fe3ad16a99d63.png?r=PG&s=20",
-                    "thumb24": "https://secure.gravatar.com/avatar/cf3bd47834635a5f769fe3ad16a99d63.png?r=PG&s=24",
-                    "thumb32": "https://secure.gravatar.com/avatar/cf3bd47834635a5f769fe3ad16a99d63.png?r=PG&s=32",
-                    "thumb48": "https://secure.gravatar.com/avatar/cf3bd47834635a5f769fe3ad16a99d63.png?r=PG&s=48",
-                    "thumb64": "https://secure.gravatar.com/avatar/cf3bd47834635a5f769fe3ad16a99d63.png?r=PG&s=64",
-                    "thumb128": "https://secure.gravatar.com/avatar/cf3bd47834635a5f769fe3ad16a99d63.png?r=PG&s=128"
-                  }
-                },
-                "content": {
-                  "html": "My eggs are no longer in the fridge.",
-                  "text": "My eggs are no longer in the fridge.",
-                  "truncated": false,
-                  "attachments": []
-                }
-              }
-            }
-          RESP
-          )
+          .to_return(status: 201, body: SupportBee::Stubs["ticket"])
 
         ticket = @client.create_ticket({
           subject: "Where are my hard-boiled eggs?",
@@ -104,52 +59,7 @@ describe SupportBee::Client do
       it "returns a formatted ticket" do
         stub_request(:get, "https://gobiasindustries.supportbee.com/tickets/4784806")
           .with(query: { auth_token: "abc123" })
-          .to_return(status: 200, body: <<-RESP
-            {
-              "ticket": {
-                "id": 4784806,
-                "subject": "Where are my hard-boiled eggs?",
-                "replies_count": 0,
-                "agent_replies_count": 0,
-                "comments_count": 0,
-                "last_activity_at": "2015-03-13T20:40:50Z",
-                "created_at": "2015-03-13T20:40:50Z",
-                "unanswered": true,
-                "archived": false,
-                "private": false,
-                "spam": false,
-                "trash": false,
-                "summary": "My eggs are no longer in the fridge.",
-                "draft": false,
-                "source": {
-                  "web": "gobiasindustries-support@supportbeemail.com"
-                },
-                "cc": [],
-                "labels": [],
-                "requester": {
-                  "id": 1493594,
-                  "email": "tobiasfunke@example.com",
-                  "name": "Tobias Funke",
-                  "agent": false,
-                  "picture": {
-                    "thumb20": "https://secure.gravatar.com/avatar/cf3bd47834635a5f769fe3ad16a99d63.png?r=PG&s=20",
-                    "thumb24": "https://secure.gravatar.com/avatar/cf3bd47834635a5f769fe3ad16a99d63.png?r=PG&s=24",
-                    "thumb32": "https://secure.gravatar.com/avatar/cf3bd47834635a5f769fe3ad16a99d63.png?r=PG&s=32",
-                    "thumb48": "https://secure.gravatar.com/avatar/cf3bd47834635a5f769fe3ad16a99d63.png?r=PG&s=48",
-                    "thumb64": "https://secure.gravatar.com/avatar/cf3bd47834635a5f769fe3ad16a99d63.png?r=PG&s=64",
-                    "thumb128": "https://secure.gravatar.com/avatar/cf3bd47834635a5f769fe3ad16a99d63.png?r=PG&s=128"
-                  }
-                },
-                "content": {
-                  "html": "My eggs are no longer in the fridge.",
-                  "text": "My eggs are no longer in the fridge.",
-                  "truncated": false,
-                  "attachments": []
-                }
-              }
-            }
-          RESP
-        )
+          .to_return(status: 200, body: SupportBee::Stubs["ticket"])
 
         ticket = @client.ticket(4784806)
 
@@ -181,16 +91,7 @@ describe SupportBee::Client do
       it "can create a label" do
         stub_request(:post, "https://gobiasindustries.supportbee.com/tickets/4784985/labels/important")
           .with(query: { auth_token: "abc123" })
-          .to_return(status: 201, body: <<-RESP
-              {
-                "label": {
-                  "id": 9839577,
-                  "label": "important",
-                  "ticket": 4784985
-                }
-              }
-          RESP
-          )
+          .to_return(status: 201, body: SupportBee::Stubs["label"])
 
         label = @client.add_label(4784985, "important")
 

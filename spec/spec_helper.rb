@@ -20,6 +20,10 @@
 require 'webmock/rspec'
 require 'support_bee'
 
+require File.join(File.dirname(File.expand_path(__FILE__)), "stubs/stubs")
+
+SupportBee::Stubs.load!
+
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
