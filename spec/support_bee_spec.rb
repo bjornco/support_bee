@@ -12,6 +12,7 @@ describe SupportBee do
     context "when successful" do
       it "returns a formatted ticket" do
         stub_request(:post, "https://gobiasindustries.supportbee.com/tickets")
+          .with(query: { auth_token: "abc123" })
           .to_return(status: 201, body: SupportBee::Stubs["ticket"])
 
         ticket = SupportBee.create_ticket({
@@ -36,6 +37,7 @@ describe SupportBee do
     context "when validation fails" do
       it "raises SupportBee::BadRequest" do
         stub_request(:post, "https://gobiasindustries.supportbee.com/tickets")
+          .with(query: { auth_token: "abc123" })
           .to_return(status: 400, body: <<-RESP
             {
               "error": "Validation failed: Requester can't be blank, Requester can't be blank, Requester email can't be blank, Requester email email is invalid"

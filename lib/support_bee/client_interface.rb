@@ -2,9 +2,7 @@ module SupportBee
   module ClientInterface
 
     def ticket(id)
-      url = build_url("/tickets/#{ id }")
-
-      RestClient.get(url) do |response, request, result, &block|
+      get "/tickets/#{ id }" do |response, request, result, &block|
         case response.code
         when 200
           format_response(parse_json(response)).ticket
@@ -17,7 +15,7 @@ module SupportBee
     end
 
     def create_ticket(params)
-      RestClient.post(build_url("/tickets", include_auth_token: false), { ticket: params }, build_headers) do |response, request, result, &block|
+      post "/tickets", params: { ticket: params } do |response, request, result, &block|
         case response.code
         when 201
           format_response(parse_json(response)).ticket
@@ -30,9 +28,7 @@ module SupportBee
     end
 
     def add_label(ticket_id, label)
-      url = build_url("/tickets/#{ ticket_id }/labels/#{ label }")
-
-      RestClient.post(url, {}, build_headers) do |response, request, result, &block|
+      post "/tickets/#{ ticket_id }/labels/#{ label }" do |response, request, result, &block|
         case response.code
         when 201
           format_response(parse_json(response)).label
@@ -47,14 +43,21 @@ module SupportBee
 
     private
 
-    def build_url(endpoint, include_auth_token: true)
+    def get(endpoint, params: {}, headers: {}, &block)
+      params[:auth_token] = auth_token
+      url = build_url(endpoint, params)
+      RestClient.get(url, build_headers(headers), &block)
+    end
+
+    def post(endpoint, params: {}, headers: {}, &block)
+      url = build_url(endpoint, auth_token: auth_token)
+      RestClient.post(url, params, build_headers(headers), &block)
+    end
+
+    def build_url(endpoint, params)
       uri = URI.parse(company_url)
       uri.path = endpoint
-
-      if include_auth_token
-        uri.query = URI.encode_www_form(auth_token: auth_token)
-      end
-
+      uri.query = URI.encode_www_form(params)
       uri.to_s
     end
 
