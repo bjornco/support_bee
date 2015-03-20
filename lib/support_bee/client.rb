@@ -1,9 +1,5 @@
-require 'rest-client'
-require 'hashie'
-
 module SupportBee
   class Client
-    include SupportBee::Configuration
     include SupportBee::ClientInterface
 
     def initialize(options)
