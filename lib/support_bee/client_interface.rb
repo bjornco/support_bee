@@ -37,7 +37,7 @@ module SupportBee
       post "/tickets/#{ ticket_id }/archive" do |response, request, result, &block|
         case response.code
         when 204
-          nil
+          true
         when 404
           raise SupportBee::NotFound.new(response.body)
         else

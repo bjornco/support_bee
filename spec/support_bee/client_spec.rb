@@ -95,7 +95,7 @@ describe SupportBee::Client do
           .with(query: { auth_token: "abc123" })
           .to_return(status: 204, body: "")
 
-        expect(@client.archive_ticket(4784806)).to be_nil
+        expect(@client.archive_ticket(4784806)).to eq(true)
       end
     end
 
