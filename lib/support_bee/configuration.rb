@@ -1,9 +1,16 @@
 module SupportBee
   module Configuration
-    attr_accessor :auth_token, :company
+    Config = Struct.new(:auth_token, :company)
 
     def configure
-      yield self
+      yield config
+    end
+
+
+    private
+
+    def config
+      @config ||= Config.new
     end
   end
 end

@@ -1,5 +1,11 @@
+require 'rest-client'
+require 'hashie'
+require 'support_bee/configuration'
+require 'support_bee/error'
+
 module SupportBee
   module ClientInterface
+    include SupportBee::Configuration
 
     def ticket(id)
       get "/tickets/#{ id }" do |response, request, result, &block|
@@ -44,13 +50,13 @@ module SupportBee
     private
 
     def get(endpoint, params: {}, headers: {}, &block)
-      params[:auth_token] = auth_token
+      params[:auth_token] = config.auth_token
       url = build_url(endpoint, params)
       RestClient.get(url, build_headers(headers), &block)
     end
 
     def post(endpoint, params: {}, headers: {}, &block)
-      url = build_url(endpoint, auth_token: auth_token)
+      url = build_url(endpoint, auth_token: config.auth_token)
       RestClient.post(url, params, build_headers(headers), &block)
     end
 
@@ -74,7 +80,7 @@ module SupportBee
     end
 
     def company_url
-      @company_url ||= "https://#{company}.supportbee.com/".freeze
+      @company_url ||= "https://#{config.company}.supportbee.com/".freeze
     end
   end
 end
