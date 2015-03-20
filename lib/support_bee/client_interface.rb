@@ -33,6 +33,19 @@ module SupportBee
       end
     end
 
+    def archive_ticket(ticket_id)
+      post "/tickets/#{ ticket_id }/archive" do |response, request, result, &block|
+        case response.code
+        when 204
+          true
+        when 404
+          raise SupportBee::NotFound.new(response.body)
+        else
+          response.return!(request, result, &block)
+        end
+      end
+    end
+
     def add_label(ticket_id, label)
       post "/tickets/#{ ticket_id }/labels/#{ label }" do |response, request, result, &block|
         case response.code

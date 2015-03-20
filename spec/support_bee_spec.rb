@@ -91,6 +91,31 @@ describe SupportBee do
     end
   end
 
+  describe "archiving a ticket" do
+    context "when successful" do
+      it "archives a ticket" do
+        stub_request(:post, "https://gobiasindustries.supportbee.com/tickets/4784806/archive")
+          .with(query: { auth_token: "abc123" })
+          .to_return(status: 204, body: "")
+
+        expect(SupportBee.archive_ticket(4784806)).to eq(true)
+      end
+    end
+
+    context "when ticket doesn't exist" do
+      it "raises SupportBee::NotFound" do
+        stub_request(:post, "https://gobiasindustries.supportbee.com/tickets/4784806/archive")
+          .with(query: { auth_token: "abc123" })
+          .to_return(status: 404, body: <<-RESP
+            {"error":"Couldn't find Ticket with id=4784806 [WHERE \"tickets\".\"company_id\" = 5]"}
+          RESP
+          )
+
+        expect { SupportBee.archive_ticket(4784806) }.to raise_error(SupportBee::NotFound)
+      end
+    end
+  end
+
   describe "label requests" do
     context "when successful" do
       it "can create a label" do
