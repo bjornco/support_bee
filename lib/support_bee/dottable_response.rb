@@ -10,6 +10,9 @@ module SupportBee
       -> (body) { make_dottable(parse_json body).send(@attribute) }
     end
 
+
+    private
+
     def make_dottable(hash)
       Hashie::Mash.new(hash)
     end
