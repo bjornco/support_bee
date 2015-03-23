@@ -8,10 +8,6 @@ module SupportBee
       not_found:    404
     }.freeze
 
-    def self.create(&block)
-      new.instance_eval(&block)
-    end
-
     def to_proc
       -> (response, *_) { trigger(response.code, response.body) }
     end

@@ -9,53 +9,46 @@ module SupportBee
     include SupportBee::Configuration
 
     def ticket(id)
-      handler = ResponseHandler.create do
-        on :ok, DottableResponse.new(:ticket)
-        on :not_found, NotFound
+      get "/tickets/#{ id }" do |response|
+        response.on :ok, DottableResponse.new(:ticket)
+        response.on :not_found, NotFound
       end
-
-      get "/tickets/#{ id }", &handler
     end
 
     def create_ticket(params)
-      handler = ResponseHandler.create do
-        on :created, DottableResponse.new(:ticket)
-        on :bad_request, BadRequest
+      post "/tickets", params: { ticket: params } do |response|
+        response.on :created, DottableResponse.new(:ticket)
+        response.on :bad_request, BadRequest
       end
-
-      post "/tickets", params: { ticket: params }, &handler
     end
 
     def archive_ticket(ticket_id)
-      handler = ResponseHandler.create do
-        on :no_content, -> (_) { true }
-        on :not_found, NotFound
+      post "/tickets/#{ ticket_id }/archive" do |response|
+        response.on :no_content, -> (_) { true }
+        response.on :not_found, NotFound
       end
-
-      post "/tickets/#{ ticket_id }/archive", &handler
     end
 
     def add_label(ticket_id, label)
-      handler = ResponseHandler.create do
-        on :created, DottableResponse.new(:label)
-        on :not_found, NotFound
+      post "/tickets/#{ ticket_id }/labels/#{ label }" do |response|
+        response.on :created, DottableResponse.new(:label)
+        response.on :not_found, NotFound
       end
-
-      post "/tickets/#{ ticket_id }/labels/#{ label }", &handler
     end
 
 
     private
 
-    def get(endpoint, params: {}, headers: {}, &block)
-      params[:auth_token] = config.auth_token
-      url = build_url(endpoint, params)
-      RestClient.get(url, build_headers(headers), &block)
+    def get(endpoint, params: {}, headers: {})
+      url = build_url(endpoint, params.merge(auth_token: config.auth_token))
+      handler = yield ResponseHandler.new
+      RestClient.get(url, build_headers(headers), &handler)
     end
 
-    def post(endpoint, params: {}, headers: {}, &block)
+    def post(endpoint, params: {}, headers: {})
       url = build_url(endpoint, auth_token: config.auth_token)
-      RestClient.post(url, params, build_headers(headers), &block)
+      handler = yield ResponseHandler.new
+      RestClient.post(url, params, build_headers(headers), &handler)
     end
 
     def build_url(endpoint, params)
