@@ -1,62 +1,47 @@
 require 'rest-client'
-require 'hashie'
 require 'support_bee/configuration'
 require 'support_bee/error'
+require 'support_bee/response_handler'
+require 'support_bee/dottable_response'
 
 module SupportBee
   module ClientInterface
     include SupportBee::Configuration
 
     def ticket(id)
-      get "/tickets/#{ id }" do |response, request, result, &block|
-        case response.code
-        when 200
-          format_response(parse_json(response)).ticket
-        when 404
-          raise SupportBee::NotFound.new(response.body)
-        else
-          response.return!(request, result, &block)
-        end
+      handler = ResponseHandler.create do
+        on :ok, DottableResponse.new(:ticket)
+        on :not_found, NotFound
       end
+
+      get "/tickets/#{ id }", &handler
     end
 
     def create_ticket(params)
-      post "/tickets", params: { ticket: params } do |response, request, result, &block|
-        case response.code
-        when 201
-          format_response(parse_json(response)).ticket
-        when 400
-          raise SupportBee::BadRequest.new(response.body)
-        else
-          response.return!(request, result, &block)
-        end
+      handler = ResponseHandler.create do
+        on :created, DottableResponse.new(:ticket)
+        on :bad_request, BadRequest
       end
+
+      post "/tickets", params: { ticket: params }, &handler
     end
 
     def archive_ticket(ticket_id)
-      post "/tickets/#{ ticket_id }/archive" do |response, request, result, &block|
-        case response.code
-        when 204
-          true
-        when 404
-          raise SupportBee::NotFound.new(response.body)
-        else
-          response.return!(request, result, &block)
-        end
+      handler = ResponseHandler.create do
+        on :no_content, -> (_) { true }
+        on :not_found, NotFound
       end
+
+      post "/tickets/#{ ticket_id }/archive", &handler
     end
 
     def add_label(ticket_id, label)
-      post "/tickets/#{ ticket_id }/labels/#{ label }" do |response, request, result, &block|
-        case response.code
-        when 201
-          format_response(parse_json(response)).label
-        when 404
-          raise SupportBee::NotFound.new(response.body)
-        else
-          response.return!(request, result, &block)
-        end
+      handler = ResponseHandler.create do
+        on :created, DottableResponse.new(:label)
+        on :not_found, NotFound
       end
+
+      post "/tickets/#{ ticket_id }/labels/#{ label }", &handler
     end
 
 
@@ -78,14 +63,6 @@ module SupportBee
       uri.path = endpoint
       uri.query = URI.encode_www_form(params)
       uri.to_s
-    end
-
-    def format_response(parsed_json)
-      Hashie::Mash.new(parsed_json)
-    end
-
-    def parse_json(json)
-      JSON.parse(json)
     end
 
     def build_headers(headers={})
